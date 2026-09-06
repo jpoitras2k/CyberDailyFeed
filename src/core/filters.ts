@@ -1,6 +1,13 @@
 import type { Headline, ThreatCategory, UserPreferences } from "./types";
 import { DEFAULT_PREFERENCES } from "./types";
 
+export function parseKeywordsFromDraft(raw: string): string[] {
+  return raw
+    .split(",")
+    .map((part) => part.trim())
+    .filter(Boolean);
+}
+
 export function applyUserFilters(
   headlines: readonly Headline[],
   preferences: UserPreferences = DEFAULT_PREFERENCES,

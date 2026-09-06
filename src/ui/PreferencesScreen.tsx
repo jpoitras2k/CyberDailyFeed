@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+import { parseKeywordsFromDraft } from "../core/filters";
 import { THREAT_CATEGORIES } from "../core/types";
 import type { UserPreferences } from "../core/types";
 import { TagChip } from "./TagChip";
@@ -13,7 +15,11 @@ export function PreferencesScreen({
   onChange,
   onBack,
 }: PreferencesScreenProps) {
-  const keywordText = preferences.keywords.join(", ");
+  const [keywordDraft, setKeywordDraft] = useState(preferences.keywords.join(", "));
+
+  useEffect(() => {
+    setKeywordDraft(preferences.keywords.join(", "));
+  }, [preferences.keywords]);
 
   function toggleCategory(category: (typeof THREAT_CATEGORIES)[number]): void {
     const selected = new Set(preferences.selectedCategories);
@@ -24,14 +30,23 @@ export function PreferencesScreen({
     }
     onChange({
       ...preferences,
+      keywords: parseKeywordsFromDraft(keywordDraft),
       selectedCategories: THREAT_CATEGORIES.filter((item) => selected.has(item)),
     });
+  }
+
+  function goBack(): void {
+    onChange({
+      ...preferences,
+      keywords: parseKeywordsFromDraft(keywordDraft),
+    });
+    onBack();
   }
 
   return (
     <section className="screen">
       <header className="topbar">
-        <button type="button" className="text-button" onClick={onBack}>
+        <button type="button" className="text-button" onClick={goBack}>
           ← Today
         </button>
         <div>
@@ -62,19 +77,17 @@ export function PreferencesScreen({
         <h2>Keyword interests</h2>
         <p className="lede">
           Comma-separated terms matched against headlines only (for example{" "}
-          <code>cisco, lockbit, magento</code>).
+          <code>cisco, lockbit</code>).
         </p>
         <textarea
           aria-label="Keyword interests"
-          value={keywordText}
+          value={keywordDraft}
           rows={4}
-          onChange={(event) =>
+          onChange={(event) => setKeywordDraft(event.target.value)}
+          onBlur={(event) =>
             onChange({
               ...preferences,
-              keywords: event.target.value
-                .split(",")
-                .map((part) => part.trim())
-                .filter(Boolean),
+              keywords: parseKeywordsFromDraft(event.target.value),
             })
           }
         />
