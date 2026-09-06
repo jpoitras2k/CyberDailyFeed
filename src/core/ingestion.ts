@@ -1,6 +1,6 @@
 import { parseCisaListingHtml } from "./cisaHtml";
 import { filterFreshHeadlines } from "./freshness";
-import { applyUserFilters, mergeHeadlines, sortByNewest } from "./filters";
+import { mergeHeadlines, sortByNewest } from "./filters";
 import { headlineHasBody, parseRssFeed } from "./rss";
 import { RSS_SOURCES } from "./sources";
 import type {
@@ -9,9 +9,7 @@ import type {
   IngestError,
   RssSource,
   SourceIngestResult,
-  UserPreferences,
 } from "./types";
-import { DEFAULT_PREFERENCES } from "./types";
 
 export interface FeedFetcher {
   (url: string): Promise<string>;
@@ -19,7 +17,6 @@ export interface FeedFetcher {
 
 export interface IngestOptions {
   now?: Date;
-  preferences?: UserPreferences;
   useDevProxy?: boolean;
 }
 
@@ -45,7 +42,6 @@ export async function ingestAllSources(
 ): Promise<FeedSnapshot> {
   const load = fetcher ?? defaultFetcher;
   const now = options.now ?? new Date();
-  const preferences = options.preferences ?? DEFAULT_PREFERENCES;
   const results = await Promise.all(
     RSS_SOURCES.map((source) => ingestSource(source, load, now, options.useDevProxy === true)),
   );
@@ -58,9 +54,7 @@ export async function ingestAllSources(
       message: result.error ?? "unknown error",
     }));
 
-  const merged = sortByNewest(
-    applyUserFilters(mergeHeadlines(results.map((result) => result.fresh)), preferences),
-  );
+  const merged = sortByNewest(mergeHeadlines(results.map((result) => result.fresh)));
 
   return {
     generatedAt: now.toISOString(),

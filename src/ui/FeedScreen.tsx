@@ -42,7 +42,7 @@ export function FeedScreen({
         </div>
       </header>
 
-      <div className="chip-row">
+      <div className="chip-row wrap">
         {THREAT_CATEGORIES.map((category) => (
           <TagChip
             key={category}

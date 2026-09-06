@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { applyUserFilters } from "./core/filters";
+import { FRESHNESS_WINDOW_MS } from "./core/freshness";
 import { ingestAllSources } from "./core/ingestion";
 import type { FeedSnapshot, ThreatCategory, UserPreferences } from "./core/types";
 import { THREAT_CATEGORIES } from "./core/types";
@@ -22,7 +24,6 @@ export function App() {
     try {
       const next = await ingestAllSources(undefined, {
         now: new Date(),
-        preferences,
         useDevProxy: isDevWebPreview(),
       });
       setSnapshot(next);
@@ -30,7 +31,7 @@ export function App() {
     } finally {
       setLoading(false);
     }
-  }, [preferences]);
+  }, []);
 
   useEffect(() => {
     void refresh();
@@ -55,14 +56,15 @@ export function App() {
     if (!snapshot) {
       return null;
     }
-    const cutoff = now.getTime() - 24 * 60 * 60 * 1000;
+    const cutoff = now.getTime() - FRESHNESS_WINDOW_MS;
+    const stillFresh = snapshot.headlines.filter(
+      (headline) => Date.parse(headline.publishedAt) >= cutoff,
+    );
     return {
       ...snapshot,
-      headlines: snapshot.headlines.filter(
-        (headline) => Date.parse(headline.publishedAt) >= cutoff,
-      ),
+      headlines: applyUserFilters(stillFresh, preferences),
     };
-  }, [snapshot, now]);
+  }, [snapshot, now, preferences]);
 
   function toggleCategory(category: ThreatCategory): void {
     const selected = new Set(preferences.selectedCategories);

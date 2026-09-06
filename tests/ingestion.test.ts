@@ -57,6 +57,8 @@ describe("ingest pipeline", () => {
       false,
     );
     expect(JSON.stringify(snapshot.headlines)).not.toMatch(/FULL ARTICLE TEXT/i);
+    // Ingest returns the full fresh set; tag/keyword filters are a view concern.
+    expect(snapshot.headlines.length).toBeGreaterThan(1);
   });
 });
 
