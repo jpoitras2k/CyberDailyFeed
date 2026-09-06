@@ -6,11 +6,22 @@ import react from "@vitejs/plugin-react";
  * Capacitor/Android builds fetch the official endpoints directly (no CORS).
  */
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    {
+      name: "allow-cursor-preview-hosts",
+      config() {
+        return {
+          server: { allowedHosts: true },
+          preview: { allowedHosts: true },
+        };
+      },
+    },
+  ],
   server: {
     host: "0.0.0.0",
     port: 5173,
-    // Cursor Cloud preview uses *.cursorvm.com / *.cvm.dev Host headers.
+    strictPort: true,
     allowedHosts: true,
     proxy: {
       "/proxy/rss/dark-reading": {
