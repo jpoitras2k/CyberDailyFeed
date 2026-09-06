@@ -1,0 +1,37 @@
+{
+  "name": "cyberdailyfeed",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Mobile-first cybersecurity headline aggregator for defenders. Headlines, source, and link-out only.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview --host 0.0.0.0 --port 4173",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "ingest": "tsx src/core/ingest-cli.ts",
+    "ingest:live": "tsx src/core/ingest-cli.ts --live"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@capacitor/browser": "^8.0.4",
+    "@capacitor/core": "^8.5.1",
+    "@capacitor/preferences": "^8.0.1",
+    "fast-xml-parser": "^5.11.1",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.5.1",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.7",
+    "@vitejs/plugin-react": "^6.1.1",
+    "tsx": "^4.23.13",
+    "typescript": "^7.0.2",
+    "vite": "^8.2.2",
+    "vitest": "^5.0.0"
+  }
+}

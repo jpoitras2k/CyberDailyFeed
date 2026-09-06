@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0"
+  xmlns:content="http://purl.org/rss/1.0/modules/content/"
+  xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <channel>
+    <title>Fixture Cyber Feed</title>
+    <link>https://example.test</link>
+    <item>
+      <title><![CDATA[LockBit ransomware hits hospital network]]></title>
+      <link><![CDATA[https://example.test/lockbit-hospital]]></link>
+      <description><![CDATA[FULL ARTICLE TEXT THAT MUST NEVER BE STORED OR DISPLAYED.]]></description>
+      <content:encoded><![CDATA[<p>Even more full article text that must be dropped.</p>]]></content:encoded>
+      <pubDate>Sun, 06 Sep 2026 12:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>Unpatched Magento zero-day exploited to backdoor stores</title>
+      <link>https://example.test/magento-0day</link>
+      <pubDate>Sun, 06 Sep 2026 08:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>IDScan sued over alleged data breach affecting 153 million drivers</title>
+      <link>https://example.test/idscan-breach</link>
+      <pubDate>Sat, 05 Sep 2026 10:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>APT29 nation-state actors phish diplomats with spoofed login portal</title>
+      <link>https://example.test/apt29-phish</link>
+      <pubDate>Sun, 06 Sep 2026 01:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>This item is from last week and must be filtered out</title>
+      <link>https://example.test/old-story</link>
+      <pubDate>Sun, 30 Aug 2026 12:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>Undated item must be dropped from the default view</title>
+      <link>https://example.test/no-date</link>
+    </item>
+    <item>
+      <title>Weekly security roundup</title>
+      <guid isPermaLink="true">https://example.test/roundup</guid>
+      <pubDate>Sun, 06 Sep 2026 11:30:00 GMT</pubDate>
+    </item>
+  </channel>
+</rss>
