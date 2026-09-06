@@ -10,6 +10,8 @@ export default defineConfig({
   server: {
     host: "0.0.0.0",
     port: 5173,
+    // Cursor Cloud preview uses *.cursorvm.com / *.cvm.dev Host headers.
+    allowedHosts: true,
     proxy: {
       "/proxy/rss/dark-reading": {
         target: "https://www.darkreading.com",
@@ -46,6 +48,7 @@ export default defineConfig({
   preview: {
     host: "0.0.0.0",
     port: 4173,
+    allowedHosts: true,
   },
   test: {
     environment: "node",
