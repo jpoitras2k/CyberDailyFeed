@@ -3,7 +3,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { parseCisaListingHtml } from "../src/core/cisaHtml";
-import { ingestAllSources } from "../src/core/ingestion";
+import { ingestAllSources, retainHeadlinesIfRefreshMissed } from "../src/core/ingestion";
 import { RSS_SOURCES } from "../src/core/sources";
 import { normalizePreferences } from "../src/core/filters";
 
@@ -77,5 +77,98 @@ describe("on-device preferences", () => {
       keywords: ["Cisco", "lockbit"],
       selectedCategories: ["phishing", "ransomware"],
     });
+  });
+});
+
+describe("refresh miss handling", () => {
+  it("keeps the previous headlines when every source comes back empty", () => {
+    const previous = {
+      generatedAt: "2026-09-06T16:00:00.000Z",
+      headlines: [
+        {
+          id: "thn:https://example.test/a",
+          title: "Existing headline",
+          sourceId: "the-hacker-news",
+          sourceName: "The Hacker News",
+          url: "https://example.test/a",
+          publishedAt: "2026-09-06T15:00:00.000Z",
+          categories: [],
+        },
+      ],
+      sources: [
+        {
+          sourceId: "the-hacker-news",
+          sourceName: "The Hacker News",
+          fetched: 4,
+          fresh: [],
+          stale: 0,
+          droppedUndated: 0,
+        },
+      ],
+      errors: [],
+    };
+    previous.sources[0]!.fresh = previous.headlines;
+
+    const next = {
+      generatedAt: "2026-09-06T16:01:00.000Z",
+      headlines: [],
+      sources: [
+        {
+          sourceId: "the-hacker-news",
+          sourceName: "The Hacker News",
+          fetched: 0,
+          fresh: [],
+          stale: 0,
+          droppedUndated: 0,
+          error: "Empty response fetching /proxy/rss/the-hacker-news",
+        },
+      ],
+      errors: [
+        {
+          sourceId: "the-hacker-news",
+          sourceName: "The Hacker News",
+          message: "Empty response fetching /proxy/rss/the-hacker-news",
+        },
+      ],
+    };
+
+    const kept = retainHeadlinesIfRefreshMissed(previous, next);
+    expect(kept.headlines).toHaveLength(1);
+    expect(kept.headlines[0]?.title).toBe("Existing headline");
+  });
+
+  it("does not keep stale-empty results that are a real 24h miss", () => {
+    const previous = {
+      generatedAt: "2026-09-06T16:00:00.000Z",
+      headlines: [
+        {
+          id: "thn:https://example.test/a",
+          title: "Existing headline",
+          sourceId: "the-hacker-news",
+          sourceName: "The Hacker News",
+          url: "https://example.test/a",
+          publishedAt: "2026-09-06T15:00:00.000Z",
+          categories: [],
+        },
+      ],
+      sources: [],
+      errors: [],
+    };
+    const next = {
+      generatedAt: "2026-09-07T16:00:00.000Z",
+      headlines: [],
+      sources: [
+        {
+          sourceId: "the-hacker-news",
+          sourceName: "The Hacker News",
+          fetched: 50,
+          fresh: [],
+          stale: 50,
+          droppedUndated: 0,
+        },
+      ],
+      errors: [],
+    };
+    expect(retainHeadlinesIfRefreshMissed(previous, next).headlines).toEqual([]);
   });
 });

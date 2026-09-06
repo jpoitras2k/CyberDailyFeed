@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { applyUserFilters } from "./core/filters";
 import { FRESHNESS_WINDOW_MS } from "./core/freshness";
-import { ingestAllSources } from "./core/ingestion";
+import { ingestAllSources, retainHeadlinesIfRefreshMissed } from "./core/ingestion";
 import type { FeedSnapshot, ThreatCategory, UserPreferences } from "./core/types";
 import { THREAT_CATEGORIES } from "./core/types";
 import { isDevWebPreview } from "./platform/http";
@@ -26,7 +26,7 @@ export function App() {
         now: new Date(),
         useDevProxy: isDevWebPreview(),
       });
-      setSnapshot(next);
+      setSnapshot((previous) => retainHeadlinesIfRefreshMissed(previous, next));
       setNow(new Date());
     } finally {
       setLoading(false);

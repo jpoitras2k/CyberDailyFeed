@@ -24,16 +24,29 @@ const DEFAULT_USER_AGENT =
   "CyberDailyFeed/0.1 (headline aggregator; +https://github.com/jpoitras2k/CyberDailyFeed)";
 
 export async function defaultFetcher(url: string): Promise<string> {
+  const headers: Record<string, string> = {
+    Accept:
+      "application/rss+xml, application/atom+xml, application/xml, text/xml, text/html;q=0.8",
+  };
+  if (typeof window === "undefined") {
+    headers["User-Agent"] = DEFAULT_USER_AGENT;
+  }
   const response = await fetch(url, {
-    headers: {
-      Accept: "application/rss+xml, application/atom+xml, application/xml, text/xml, text/html;q=0.8",
-      "User-Agent": DEFAULT_USER_AGENT,
-    },
+    cache: "no-store",
+    headers,
   });
   if (!response.ok) {
     throw new Error(`HTTP ${response.status} fetching ${url}`);
   }
-  return response.text();
+  const body = await response.text();
+  if (!body.trim()) {
+    throw new Error(`Empty response fetching ${url}`);
+  }
+  return body;
+}
+
+export function looksLikeFeedXml(payload: string): boolean {
+  return /<(rss|feed|rdf:RDF)\b/i.test(payload);
 }
 
 export async function ingestAllSources(
@@ -64,6 +77,36 @@ export async function ingestAllSources(
   };
 }
 
+/** If a refresh comes back empty because fetches failed, keep the last good list. */
+export function retainHeadlinesIfRefreshMissed(
+  previous: FeedSnapshot | null,
+  next: FeedSnapshot,
+): FeedSnapshot {
+  if (next.headlines.length > 0 || !previous || previous.headlines.length === 0) {
+    return next;
+  }
+  const missedEverySource = next.sources.every(
+    (source) => source.fetched === 0 || Boolean(source.error),
+  );
+  if (!missedEverySource) {
+    return next;
+  }
+  return {
+    ...next,
+    headlines: previous.headlines,
+    sources: next.sources.map((source) => {
+      const prior = previous.sources.find((item) => item.sourceId === source.sourceId);
+      if (!prior || source.fresh.length > 0) {
+        return source;
+      }
+      return {
+        ...prior,
+        error: source.error ?? prior.error,
+      };
+    }),
+  };
+}
+
 export async function ingestSource(
   source: RssSource,
   fetcher: FeedFetcher,
@@ -76,6 +119,9 @@ export async function ingestSource(
 
   try {
     const xml = await fetcher(rssUrl);
+    if (!looksLikeFeedXml(xml)) {
+      throw new Error("Response was not an RSS/Atom feed");
+    }
     headlines = parseRssFeed(xml, source);
     if (headlines.some(headlineHasBody)) {
       throw new Error("Parser leaked article body fields");
