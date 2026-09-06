@@ -1,0 +1,14 @@
+node_modules/
+dist/
+coverage/
+tsconfig.tsbuildinfo
+*.tsbuildinfo
+.DS_Store
+*.log
+.vite/
+android/.gradle/
+android/app/build/
+ios/App/Pods/
+.idea/
+.vscode/
+*.iml

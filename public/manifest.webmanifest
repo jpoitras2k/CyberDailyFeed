@@ -1,0 +1,8 @@
+{
+  "short_name": "Cyber Daily",
+  "name": "Cyber Daily Feed",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#071018",
+  "theme_color": "#071018"
+}

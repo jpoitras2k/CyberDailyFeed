@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Atom Fixture</title>
+  <entry>
+    <title>CISA Adds One Known Exploited Vulnerability to Catalog</title>
+    <link href="https://www.cisa.gov/news-events/alerts/2026/09/06/cisa-adds-one-known-exploited-vulnerability-catalog"/>
+    <published>2026-09-06T09:00:00Z</published>
+    <content type="html">&lt;p&gt;Full advisory body must not be ingested.&lt;/p&gt;</content>
+  </entry>
+</feed>
