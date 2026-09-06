@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { parseKeywordsFromDraft } from "../core/filters";
+import { useState } from "react";
+import { mergeKeywords, removeKeyword } from "../core/filters";
 import { THREAT_CATEGORIES } from "../core/types";
 import type { UserPreferences } from "../core/types";
 import { TagChip } from "./TagChip";
@@ -15,11 +15,7 @@ export function PreferencesScreen({
   onChange,
   onBack,
 }: PreferencesScreenProps) {
-  const [keywordDraft, setKeywordDraft] = useState(preferences.keywords.join(", "));
-
-  useEffect(() => {
-    setKeywordDraft(preferences.keywords.join(", "));
-  }, [preferences.keywords]);
+  const [keywordDraft, setKeywordDraft] = useState("");
 
   function toggleCategory(category: (typeof THREAT_CATEGORIES)[number]): void {
     const selected = new Set(preferences.selectedCategories);
@@ -30,23 +26,35 @@ export function PreferencesScreen({
     }
     onChange({
       ...preferences,
-      keywords: parseKeywordsFromDraft(keywordDraft),
       selectedCategories: THREAT_CATEGORIES.filter((item) => selected.has(item)),
     });
   }
 
-  function goBack(): void {
+  function saveKeywords(): void {
+    const next = mergeKeywords(preferences.keywords, keywordDraft);
+    if (next.length === preferences.keywords.length && keywordDraft.trim() === "") {
+      return;
+    }
+    onChange({ ...preferences, keywords: next });
+    setKeywordDraft("");
+  }
+
+  function removeOne(keyword: string): void {
     onChange({
       ...preferences,
-      keywords: parseKeywordsFromDraft(keywordDraft),
+      keywords: removeKeyword(preferences.keywords, keyword),
     });
-    onBack();
+  }
+
+  function removeAll(): void {
+    onChange({ ...preferences, keywords: [] });
+    setKeywordDraft("");
   }
 
   return (
     <section className="screen">
       <header className="topbar">
-        <button type="button" className="text-button" onClick={goBack}>
+        <button type="button" className="text-button" onClick={onBack}>
           ← Today
         </button>
         <div>
@@ -76,21 +84,54 @@ export function PreferencesScreen({
       <div className="panel">
         <h2>Keyword interests</h2>
         <p className="lede">
-          Comma-separated terms matched against headlines only (for example{" "}
-          <code>cisco, lockbit</code>).
+          Save terms to match against headlines (for example <code>cisco</code> or{" "}
+          <code>lockbit</code>). Nothing is uploaded.
         </p>
-        <textarea
-          aria-label="Keyword interests"
-          value={keywordDraft}
-          rows={4}
-          onChange={(event) => setKeywordDraft(event.target.value)}
-          onBlur={(event) =>
-            onChange({
-              ...preferences,
-              keywords: parseKeywordsFromDraft(event.target.value),
-            })
-          }
-        />
+        <form
+          className="keyword-add"
+          onSubmit={(event) => {
+            event.preventDefault();
+            saveKeywords();
+          }}
+        >
+          <input
+            aria-label="New keyword"
+            placeholder="Add a keyword"
+            value={keywordDraft}
+            onChange={(event) => setKeywordDraft(event.target.value)}
+          />
+          <button
+            type="submit"
+            className="solid"
+            disabled={keywordDraft.trim().length === 0}
+          >
+            Save
+          </button>
+        </form>
+
+        {preferences.keywords.length === 0 ? (
+          <p className="lede keyword-empty">No saved keywords.</p>
+        ) : (
+          <>
+            <div className="chip-row wrap keyword-saved">
+              {preferences.keywords.map((keyword) => (
+                <span key={keyword.toLowerCase()} className="keyword-chip">
+                  {keyword}
+                  <button
+                    type="button"
+                    aria-label={`Remove ${keyword}`}
+                    onClick={() => removeOne(keyword)}
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+            </div>
+            <button type="button" className="text-button" onClick={removeAll}>
+              Remove all keywords
+            </button>
+          </>
+        )}
       </div>
 
       <div className="panel muted">

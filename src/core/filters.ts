@@ -1,11 +1,38 @@
 import type { Headline, ThreatCategory, UserPreferences } from "./types";
 import { DEFAULT_PREFERENCES } from "./types";
 
+export const MAX_SAVED_KEYWORDS = 20;
+
 export function parseKeywordsFromDraft(raw: string): string[] {
   return raw
     .split(",")
     .map((part) => part.trim())
     .filter(Boolean);
+}
+
+export function mergeKeywords(
+  existing: readonly string[],
+  draft: string,
+): string[] {
+  const next = [...existing];
+  const seen = new Set(existing.map((keyword) => keyword.toLowerCase()));
+  for (const keyword of parseKeywordsFromDraft(draft)) {
+    const key = keyword.toLowerCase();
+    if (seen.has(key)) {
+      continue;
+    }
+    seen.add(key);
+    next.push(keyword);
+  }
+  return next.slice(0, MAX_SAVED_KEYWORDS);
+}
+
+export function removeKeyword(
+  existing: readonly string[],
+  keyword: string,
+): string[] {
+  const target = keyword.toLowerCase();
+  return existing.filter((item) => item.toLowerCase() !== target);
 }
 
 export function applyUserFilters(
